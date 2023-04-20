@@ -56,7 +56,7 @@ function getDirSize($dir)
  */
 function getServerMemorySize() {
     if (!isEnabled('shell_exec')) {
-        return 0;
+        return 'shell_exec函数不可用';
     }
     // 获取操作系统类型
     $os = strtoupper(PHP_OS);
@@ -72,7 +72,7 @@ function getServerMemorySize() {
         $lines = explode("\n", $output);
         $mem = explode(":", $lines[1]);
     }
-    return (int) $mem[1];
+    return changeFileSize((int) $mem[1]);
 }
 
 /**
@@ -131,7 +131,7 @@ function formatCpuInfo($cpu) {
     $result = '';
 
     if (!$cpu) {
-        return '无法读取到cpu信息';
+        return '无法读取到cpu信息,可能是shell_exec函数不可用';
     }
 
     if (!empty($cpu['model'])) {
