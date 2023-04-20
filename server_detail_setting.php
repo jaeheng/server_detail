@@ -98,9 +98,10 @@ function getServerCpuInfo() {
         }
     } else {
         // Linux
-        exec('cat /proc/cpuinfo | grep "model name\\|cores\\|cpu MHz\\|cache size"', $output);
+        $output = processShell('cat /proc/cpuinfo | grep "model name\\|cores\\|cpu MHz\\|cache size"');
 
         if (!empty($output)) {
+            $output = explode("\n", $output);
             foreach ($output as $line) {
                 $fields = explode(':', $line, 2);
                 $key = trim($fields[0]);
