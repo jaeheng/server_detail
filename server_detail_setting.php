@@ -189,7 +189,7 @@ function plugin_setting_view() {
                         </tr>
                         <tr>
                             <th>内存大小</th>
-                            <td><?= changeFileSize(getServerMemorySize())?></td>
+                            <td><?= getServerMemorySize()?></td>
                         </tr>
                         <tr>
                             <th>磁盘空间</th>
