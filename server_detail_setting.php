@@ -61,24 +61,18 @@ function getServerMemorySize() {
     // 获取操作系统类型
     $os = strtoupper(PHP_OS);
 
-    // 根据操作系统类型使用不同的命令
-    if (strpos($os, 'WIN') === 0) {
-        // Windows
-        $output = shell_exec('systeminfo | findstr /C:"Total Physical Memory"');
-        $mem = explode(" ", $output);
-        return (int) $mem[3] * 1024 * 1024;
-    } else if (strpos($os, 'DARWIN') === 0) {
+    // 根据操作系统类型使用不同的命令,兼容mac/linux
+    if (strpos($os, 'DARWIN') === 0) {
         // macOS
-        $output = shell_exec('sysctl hw.memsize');
+        $output = processShell('sysctl hw.memsize');
         $mem = explode(" ", $output);
-        return (int) $mem[1];
     } else {
         // Linux
-        $output = shell_exec('free -b');
+        $output = processShell('free -b');
         $lines = explode("\n", $output);
         $mem = explode(":", $lines[1]);
-        return (int) $mem[1];
     }
+    return (int) $mem[1];
 }
 
 /**
@@ -92,27 +86,14 @@ function getServerCpuInfo() {
         return false;
     }
 
-    if (strpos($os, 'WIN') === 0) {
-        // Windows
-        exec("wmic cpu get Name,NumberOfCores,MaxClockSpeed,L2CacheSize /format:csv", $output);
-
-        if (!empty($output)) {
-            $lines = explode("\n", $output[1]);
-            $fields = str_getcsv($lines[0]);
-
-            $cpu['model'] = $fields[0];
-            $cpu['cores'] = $fields[1];
-            $cpu['mhz'] = $fields[2];
-            $cpu['cache'] = $fields[3];
-        }
-    } elseif (strpos($os, 'DARWIN') === 0) {
+    if (strpos($os, 'DARWIN') === 0) {
         // macOS
-        $output = shell_exec('sysctl -n machdep.cpu.brand_string');
+        $output = processShell('sysctl -n machdep.cpu.brand_string');
 
         if (!empty($output)) {
             $cpu['model'] = trim($output);
-            $cpu['cores'] = shell_exec('sysctl -n hw.ncpu');
-            $cpu['mhz'] = shell_exec('sysctl -n hw.cpufrequency');
+            $cpu['cores'] = processShell('sysctl -n hw.ncpu');
+            $cpu['mhz'] = processShell('sysctl -n hw.cpufrequency');
             $cpu['cache'] = '';
         }
     } else {
