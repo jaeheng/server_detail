@@ -243,7 +243,7 @@ function plugin_setting_view() {
                         </tr>
                         <tr>
                             <th>服务器IP</th>
-                            <td><?= gethostbyname($server['SERVER_NAME']);?></td>
+                            <td><?= processShell('curl ifconfig.me');?></td>
                         </tr>
                         <tr>
                             <th>通信协议</th>
