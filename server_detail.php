@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: 服务器信息
-Version: 1.0.1
+Version: 1.0.2
 Plugin URL:
 Description: 查看服务器详细信息
 Author: jaeheng
@@ -10,19 +10,44 @@ Author URL: https://blog.zhangziheng.com
 
 !defined('EMLOG_ROOT') && exit('access deined!');
 
-function server_detail_sidebar()
-{
-    $url = BLOG_URL . "admin/plugin.php?plugin=server_detail";
-    echo '<a class="collapse-item" id="server_detail" href="' . $url . '">服务器信息</a>';
+if (!class_exists('ServerDetail', false)) {
+    include __DIR__ . '/server_detail_class.php';
 }
 
 function server_detail_dashboard()
 {
-    $url = BLOG_URL . "admin/plugin.php?plugin=server_detail";
-    $link = '<a style="float: right;" href="' . $url . '">查看服务器信息</a>';
-    echo "<script>$('.card-header:contains(\"站点信息\")').append('{$link}')</script>";
+    $disk_usage = ServerDetail::getInstance()->getDiskUsage();
+    $percent = $disk_usage['percent'];
+    $usage = $disk_usage['usage'];
+    $total_size = $disk_usage['total_size'];
+    $cpu = ServerDetail::getInstance()->formatCpuInfo();
+    $mem = ServerDetail::getInstance()->getServerMemorySize();
+
+    echo sprintf('<div class="col-lg-6 mb-4">
+        <div class="card bg-light text-primary shadow">
+            <div class="card-body">
+                <div style="display: inline-block;">内存容量: %s,</div>
+                <div style="display: inline-block;">%s,</div>
+                <span>磁盘容量：</span>
+                <div style="display: inline-block;width: 120px;">
+                    <div class="progress" style="margin-top: 5px;">
+                        <div
+                        class="progress-bar"
+                        role="progressbar"
+                        style="width: %d%%"
+                        aria-valuenow="<?= $percent?>"
+                        aria-valuemin="0"
+                        aria-valuemax="100">%d%%</div>
+                    </div>
+                </div>
+                <div class="text-primary-50 small">--来自服务器信息插件，<a class="text-primary" href="plugin.php?plugin=server_detail">查看更多数据</a></div>
+            </div>
+        </div>
+    </div>', $mem, $cpu, $percent, $percent);
 }
 
 
-addAction('adm_menu_ext', 'server_detail_sidebar');
+addAction('adm_menu_ext', function () {
+    ServerDetail::getInstance()->server_detail_sidebar();
+});
 addAction('adm_main_content', 'server_detail_dashboard');

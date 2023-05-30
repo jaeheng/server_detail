@@ -1,158 +1,11 @@
 <?php
 !defined('EMLOG_ROOT') && exit('access deined!');
 
-/**
- * 检查某函数是否可用
- * @param $func
- * @return bool
- */
-function isEnabled($func) {
-    return is_callable($func) && false === stripos(ini_get('disable_functions'), $func);
-}
-
-/**
- * 使用shell_exec运行命令
- * @param $command
- * @return false|string|null
- */
-function processShell($command) {
-    if (isEnabled('shell_exec')) {
-        return shell_exec($command);
-    }
-    return 'shell_exec函数不可用';
-}
-
-/**
- * 获取目录大小
- * @param $dir
- * @return int
- */
-function getDirSize($dir)
-{
-    $handle = opendir($dir);
-    if (!$handle) {
-        return 0;
-    }
-    $sizeResult = 0;
-    while (false!==($FolderOrFile = readdir($handle)))
-    {
-        if($FolderOrFile != "." && $FolderOrFile != "..")
-        {
-            if(is_dir("$dir/$FolderOrFile"))
-            {
-                $sizeResult += getDirSize("$dir/$FolderOrFile");
-            } else {
-                $sizeResult += filesize("$dir/$FolderOrFile");
-            }
-        }
-    }
-    closedir($handle);
-    return $sizeResult;
-}
-
-/**
- * 获取服务器内存大小
- * @return float|int
- */
-function getServerMemorySize() {
-    if (!isEnabled('shell_exec')) {
-        return 'shell_exec函数不可用';
-    }
-    // 获取操作系统类型
-    $os = strtoupper(PHP_OS);
-
-    // 根据操作系统类型使用不同的命令,兼容mac/linux
-    if (strpos($os, 'DARWIN') === 0) {
-        // macOS
-        $output = processShell('sysctl hw.memsize');
-        $mem = explode(" ", $output);
-    } else {
-        // Linux
-        $output = processShell('free -b');
-        $lines = explode("\n", $output);
-        $mem = explode(":", $lines[1]);
-    }
-    return changeFileSize((int) $mem[1]);
-}
-
-/**
- * 获取cpu信息
- * @return array
- */
-function getServerCpuInfo() {
-    $cpu = array();
-    $os = strtoupper(PHP_OS);
-    if (!isEnabled('shell_exec')) {
-        return false;
-    }
-
-    if (strpos($os, 'DARWIN') === 0) {
-        // macOS
-        $output = processShell('sysctl -n machdep.cpu.brand_string');
-
-        if (!empty($output)) {
-            $cpu['model'] = trim($output);
-            $cpu['cores'] = processShell('sysctl -n hw.ncpu');
-            $cpu['mhz'] = processShell('sysctl -n hw.cpufrequency');
-            $cpu['cache'] = '';
-        }
-    } else {
-        // Linux
-        $output = processShell('cat /proc/cpuinfo | grep "model name\\|cores\\|cpu MHz\\|cache size"');
-
-        if (!empty($output)) {
-            $output = explode("\n", $output);
-            foreach ($output as $line) {
-                $fields = explode(':', $line, 2);
-                $key = trim($fields[0]);
-                $value = trim($fields[1]);
-
-                switch ($key) {
-                    case 'model name':
-                        $cpu['model'] = $value;
-                        break;
-                    case 'cpu MHz':
-                        $cpu['mhz'] = $value;
-                        break;
-                    case 'cache size':
-                        $cpu['cache'] = $value;
-                        break;
-                    case 'cores':
-                        $cpu['cores'] = $value;
-                        break;
-                }
-            }
-        }
-    }
-
-    return $cpu;
-}
-
-function formatCpuInfo($cpu) {
-    $result = '';
-
-    if (!$cpu) {
-        return '无法读取到cpu信息,可能是shell_exec函数不可用';
-    }
-
-    if (!empty($cpu['model'])) {
-        $result .= 'CPU型号: ' . $cpu['model'] . ', ';
-    }
-
-    if (!empty($cpu['cores'])) {
-        $result .= '核心数: ' . $cpu['cores'] . ', ';
-    }
-
-    if (!empty($cpu['mhz'])) {
-        $result .= '频率: ' . round($cpu['mhz'] / 1000, 2) . ' GHz';
-    }
-
-    return rtrim($result, ', ');
+if (!class_exists('ServerDetail', false)) {
+    include __DIR__ . '/server_detail_class.php';
 }
 
 function plugin_setting_view() {
-    $server = $_SERVER;
-    $uname = php_uname('s') . ' ' . php_uname('m') ;
     $CACHE = Cache::getInstance();
     $sta = $CACHE->readCache('sta');
 	?>
@@ -178,27 +31,27 @@ function plugin_setting_view() {
                     <table class="table table-bordered">
                         <tr>
                             <th>服务器软件</th>
-                            <td><?= $server['SERVER_SOFTWARE'];?></td>
+                            <td><?= $_SERVER['SERVER_SOFTWARE'];?></td>
                         </tr>
                         <tr>
                             <th>操作系统</th>
-                            <td><?= $uname;?></td>
+                            <td><?= ServerDetail::getInstance()->getUname();?></td>
                         </tr>
                         <tr>
                             <th>CPU</th>
-                            <td><?= formatCpuInfo(getServerCpuInfo())?></td>
+                            <td><?= ServerDetail::getInstance()->formatCpuInfo()?></td>
                         </tr>
                         <tr>
                             <th>内存大小</th>
-                            <td><?= getServerMemorySize()?></td>
+                            <td><?= ServerDetail::getInstance()->getServerMemorySize()?></td>
                         </tr>
                         <tr>
                             <th>磁盘空间</th>
                             <?php
-                            $total_size = disk_total_space('.');
-                            $free_size = disk_free_space('.');
-                            $usage = $total_size - $free_size;
-                            $percent = ($usage / $total_size) * 100;
+                            $disk_usage = ServerDetail::getInstance()->getDiskUsage();
+                            $percent = $disk_usage['percent'];
+                            $usage = $disk_usage['usage'];
+                            $total_size = $disk_usage['total_size'];
                             ?>
                             <td>
                                 <div style="display: flex">
@@ -221,15 +74,15 @@ function plugin_setting_view() {
                         </tr>
                         <tr>
                             <th>域名</th>
-                            <td><?= $server['HTTP_HOST'];?></td>
+                            <td><?= $_SERVER['HTTP_HOST'];?></td>
                         </tr>
                         <tr>
                             <th>服务器IP</th>
-                            <td><?= processShell('curl ifconfig.me');?></td>
+                            <td><?= ServerDetail::getInstance()->getIp();?></td>
                         </tr>
                         <tr>
                             <th>通信协议</th>
-                            <td><?= $server['SERVER_PROTOCOL'];?></td>
+                            <td><?= $_SERVER['SERVER_PROTOCOL'];?></td>
                         </tr>
                         <tr>
                             <th>PHP部署方式</th>
@@ -245,7 +98,7 @@ function plugin_setting_view() {
                         </tr>
                         <tr>
                             <th>当前时间</th>
-                            <td><?= date('Y-m-d H:i:s', $server['REQUEST_TIME']);?></td>
+                            <td><?= date('Y-m-d H:i:s', $_SERVER['REQUEST_TIME']);?></td>
                         </tr>
                     </table>
                 </div>
@@ -275,7 +128,7 @@ function plugin_setting_view() {
                         </tr>
                         <tr>
                             <th>博客占用大小</th>
-                            <td><?= changeFileSize(getDirSize(EMLOG_ROOT));?></td>
+                            <td><?= ServerDetail::getInstance()->getBlogSize();?></td>
                         </tr>
                         <tr>
                             <th>当前模版</th>
