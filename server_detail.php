@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: 服务器信息
-Version: 1.0.2
+Version: 1.0.3
 Plugin URL:
 Description: 查看服务器详细信息
 Author: jaeheng
-Author URL: https://blog.zhangziheng.com
+Author URL: https://blog.phpat.com
 */
 
 !defined('EMLOG_ROOT') && exit('access deined!');
