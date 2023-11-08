@@ -156,7 +156,7 @@ class ServerDetail {
         $cpu = $this->getServerCpuInfo();
 
         if (!$cpu) {
-            return '无法读取到cpu信息,可能是shell_exec函数不可用';
+            return 'CPU型号: unknown';
         }
 
         if (!empty($cpu['model'])) {

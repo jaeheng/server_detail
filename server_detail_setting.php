@@ -137,12 +137,16 @@ function plugin_setting_view() {
                         <tr>
                             <th>开启的插件</th>
                             <td><?php
+                                $server_detail_version = 'unknown';
                                 $pluginModel = new Plugin_Model();
                                 $plugins = Option::get('active_plugins');
                                 if (is_array($plugins) && !empty($plugins)) {
                                     foreach ($plugins as $item) {
                                         $plugin = $pluginModel->getPluginData($item);
                                         echo "{$plugin['Name']} ({$plugin['Version']})<br/>";
+                                        if ($plugin['Plugin'] === 'server_detail') {
+                                            $server_detail_version = $plugin['Version'];
+                                        }
                                     }
                                 }
                                 ?></td>
@@ -286,6 +290,33 @@ function plugin_setting_view() {
                         <tr>
                             <th>扩展</th>
                             <td><?= implode(', ', get_loaded_extensions());?></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-body">
+                    <div class="card-head">
+                        <span>服务器信息插件信息</span>
+                    </div>
+                    <hr/>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>版本号</th>
+                            <td><?=$server_detail_version;?></td>
+                        </tr>
+                        <tr>
+                            <th>作者主页</th>
+                            <td><?php
+                                $options = Cache::getInstance()->readCache('options');
+                                $blog_name = $options['blogname'];
+                                $blog_url = $options['blogurl'];
+                                ?>
+                                <a href="https://blog.phpat.com" target="_blank">
+                                    <img src="https://blog.phpat.com/logo.png&url=<?= base64_encode($blog_url);?>&blogname=<?= $blog_name;?>&type=server_detail&url_type=base64" style="width: 1.2em;height:1.2em;vertical-align: middle"  alt="server_detail"/>
+                                    子恒博客
+                                </a>
+                            </td>
                         </tr>
                     </table>
                 </div>
