@@ -94,7 +94,7 @@ function plugin_setting_view() {
                         </tr>
                         <tr>
                             <th>系统负载</th>
-                            <td><?= implode(', ', sys_getloadavg());?></td>
+                            <td><?= implode(', ', array_map(function ($item) { return round($item, 2); }, sys_getloadavg()));?></td>
                         </tr>
                         <tr>
                             <th>当前时间</th>

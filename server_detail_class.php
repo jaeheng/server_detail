@@ -191,7 +191,7 @@ class ServerDetail {
     }
 
     public function getIp() {
-        return $this->processShell('curl ifconfig.me');
+        return $this->processShell('curl https://pangheng.com/ifconfig.php');
     }
 
     public function getBlogSize() {
