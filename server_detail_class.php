@@ -170,7 +170,7 @@ class ServerDetail {
         }
 
         if (!empty($cpu['mhz'])) {
-            $result .= '频率: ' . round($cpu['mhz'] / 1000, 2) . ' GHz';
+            $result .= '频率: ' . round(floatval($cpu['mhz']) / 1000, 2) . ' GHz';
         }
 
         return rtrim($result, ', ');

@@ -49,7 +49,7 @@ function plugin_setting_view() {
                             <th>磁盘空间</th>
                             <?php
                             $disk_usage = ServerDetail::getInstance()->getDiskUsage();
-                            $percent = $disk_usage['percent'];
+                            $percent = floatval($disk_usage['percent']);
                             $usage = $disk_usage['usage'];
                             $total_size = $disk_usage['total_size'];
                             ?>
@@ -94,7 +94,7 @@ function plugin_setting_view() {
                         </tr>
                         <tr>
                             <th>系统负载</th>
-                            <td><?= implode(', ', array_map(function ($item) { return round($item, 2); }, sys_getloadavg()));?></td>
+                            <td><?= implode(', ', array_map(function ($item) { return round(floatval($item), 2); }, sys_getloadavg()));?></td>
                         </tr>
                         <tr>
                             <th>当前时间</th>
@@ -143,9 +143,11 @@ function plugin_setting_view() {
                                 if (is_array($plugins) && !empty($plugins)) {
                                     foreach ($plugins as $item) {
                                         $plugin = $pluginModel->getPluginData($item);
-                                        echo "{$plugin['Name']} ({$plugin['Version']})<br/>";
-                                        if ($plugin['Plugin'] === 'server_detail') {
-                                            $server_detail_version = $plugin['Version'];
+                                        if ($plugin) {
+                                            echo "{$plugin['Name']} ({$plugin['Version']})<br/>";
+                                            if ($plugin['Plugin'] === 'server_detail') {
+                                                $server_detail_version = $plugin['Version'];
+                                            }
                                         }
                                     }
                                 }
@@ -164,7 +166,7 @@ function plugin_setting_view() {
                             <td>总: <?= $sta['comnum_all'];?> 已审核: <?= $sta['comnum'];?> 未审核: <?= $sta['hidecomnum'];?></td>
                         </tr>
                         <tr>
-                            <th>笔记数量</th>
+                            <th>微语数量</th>
                             <td><?= $sta['note_num'];?></td>
                         </tr>
                         <tr>
