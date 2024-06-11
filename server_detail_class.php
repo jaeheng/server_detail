@@ -1,9 +1,11 @@
 <?php
-!defined('EMLOG_ROOT') && exit('access deined!');
+!defined('EMLOG_ROOT') && exit('Access denied!');
 
 class ServerDetail {
 
     private static $_instance;
+
+    public $sysctl = '/usr/sbin/sysctl';
 
     public static function getInstance()
     {
@@ -31,7 +33,7 @@ class ServerDetail {
     /**
      * 使用shell_exec运行命令
      * @param $command
-     * @return false|string|null
+     * @return string
      */
     public function processShell($command) {
         if ($this->isEnabled('shell_exec')) {
@@ -54,11 +56,11 @@ class ServerDetail {
         // 根据操作系统类型使用不同的命令,兼容mac/linux
         if (strpos($os, 'DARWIN') === 0) {
             // macOS
-            $output = $this->processShell('sysctl hw.memsize');
+            $output = $this->processShell("{$this->sysctl} hw.memsize 2>&1");
             $mem = explode(" ", $output);
         } else {
             // Linux
-            $output = $this->processShell('free -b');
+            $output = $this->processShell('free -b 2>&1');
             $lines = explode("\n", $output);
             $mem = explode(":", $lines[1]);
         }
@@ -111,12 +113,12 @@ class ServerDetail {
 
         if (strpos($os, 'DARWIN') === 0) {
             // macOS
-            $output = $this->processShell('sysctl -n machdep.cpu.brand_string');
+            $output = $this->processShell("{$this->sysctl} -n machdep.cpu.brand_string 2>&1");
 
             if (!empty($output)) {
                 $cpu['model'] = trim($output);
-                $cpu['cores'] = $this->processShell('sysctl -n hw.ncpu');
-                $cpu['mhz'] = $this->processShell('sysctl -n hw.cpufrequency');
+                $cpu['cores'] = $this->processShell("{$this->sysctl} -n hw.ncpu 2>&1");
+                $cpu['mhz'] = $this->processShell("{$this->sysctl} -n hw.cpufrequency 2>&1");
                 $cpu['cache'] = '';
             }
         } else {
