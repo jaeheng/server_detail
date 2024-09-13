@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: 服务器信息
-Version: 1.1.3
+Version: 1.1.4
 Plugin URL: https://www.emlog.net/plugin/detail/584
 Description: 查看服务器详细信息,包括硬件信息、PHP信息、emlog数据统计、其它相关配置信息。
 Author: 子恒博客
