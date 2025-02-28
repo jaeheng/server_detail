@@ -1,7 +1,8 @@
 <?php
 !defined('EMLOG_ROOT') && exit('Access denied!');
 
-class ServerDetail {
+class ServerDetail
+{
 
     private static $_instance;
 
@@ -26,7 +27,8 @@ class ServerDetail {
      * @param $func
      * @return bool
      */
-    public function isEnabled($func) {
+    public function isEnabled($func)
+    {
         return is_callable($func) && false === stripos(ini_get('disable_functions'), $func);
     }
 
@@ -35,7 +37,8 @@ class ServerDetail {
      * @param $command
      * @return string
      */
-    public function processShell($command) {
+    public function processShell($command)
+    {
         if ($this->isEnabled('shell_exec')) {
             return shell_exec($command);
         }
@@ -46,7 +49,8 @@ class ServerDetail {
      * 获取服务器内存大小
      * @return float|int
      */
-    public function getServerMemorySize() {
+    public function getServerMemorySize()
+    {
         if (!$this->isEnabled('shell_exec')) {
             return 'shell_exec函数不可用';
         }
@@ -64,7 +68,7 @@ class ServerDetail {
             $lines = explode("\n", $output);
             $mem = explode(":", $lines[1]);
         }
-        return changeFileSize((int) $mem[1]);
+        return changeFileSize((int)$mem[1]);
     }
 
     /**
@@ -79,12 +83,9 @@ class ServerDetail {
             return 0;
         }
         $sizeResult = 0;
-        while (false!==($FolderOrFile = readdir($handle)))
-        {
-            if($FolderOrFile != "." && $FolderOrFile != "..")
-            {
-                if(is_dir("$dir/$FolderOrFile"))
-                {
+        while (false !== ($FolderOrFile = readdir($handle))) {
+            if ($FolderOrFile != "." && $FolderOrFile != "..") {
+                if (is_dir("$dir/$FolderOrFile")) {
                     $sizeResult += $this->getDirSize("$dir/$FolderOrFile");
                 } else {
                     $sizeResult += filesize("$dir/$FolderOrFile");
@@ -99,7 +100,8 @@ class ServerDetail {
      * 获取cpu信息
      * @return array
      */
-    function getServerCpuInfo() {
+    function getServerCpuInfo()
+    {
         $cpu = array();
         $os = strtoupper(PHP_OS);
         if (!$this->isEnabled('shell_exec')) {
@@ -153,7 +155,8 @@ class ServerDetail {
         return $cpu;
     }
 
-    public function formatCpuInfo() {
+    public function formatCpuInfo()
+    {
         $result = '';
         $cpu = $this->getServerCpuInfo();
 
@@ -176,11 +179,13 @@ class ServerDetail {
         return rtrim($result, ', ');
     }
 
-    public function getUname() {
+    public function getUname()
+    {
         return php_uname('s') . ' ' . php_uname('m');
     }
 
-    public function getDiskUsage() {
+    public function getDiskUsage()
+    {
         $total_size = disk_total_space('.');
         $free_size = disk_free_space('.');
         $usage = $total_size - $free_size;
@@ -192,11 +197,13 @@ class ServerDetail {
         ];
     }
 
-    public function getIp() {
+    public function getIp()
+    {
         return $this->processShell('curl https://pangheng.com/ifconfig.php');
     }
 
-    public function getBlogSize() {
+    public function getBlogSize()
+    {
         return changeFileSize($this->getDirSize(EMLOG_ROOT));
     }
 
