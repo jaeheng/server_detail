@@ -102,6 +102,10 @@ function plugin_setting_view()
                 <div class="card-body">
                     <table class="table table-bordered">
                         <tr>
+                            <th>访问地址</th>
+                            <td><a href="<?= BLOG_URL; ?>" target="_blank"><?= BLOG_URL; ?></a></td>
+                        </tr>
+                        <tr>
                             <th>博客名称</th>
                             <td><?= Option::get('blogname'); ?></td>
                         </tr>
@@ -251,10 +255,6 @@ function plugin_setting_view()
                 <div class="card-body">
                     <table class="table table-bordered">
                         <tr>
-                            <th>访问地址</th>
-                            <td><a href="<?= BLOG_URL; ?>" target="_blank"><?= BLOG_URL; ?></a></td>
-                        </tr>
-                        <tr>
                             <th>根目录</th>
                             <td><?= EMLOG_ROOT; ?></td>
                         </tr>
@@ -316,6 +316,19 @@ function plugin_setting_view()
                                          style="width: 1.2em;height:1.2em;vertical-align: middle" alt="server_detail"/>
                                     子恒博客
                                 </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>github</th>
+                            <td>
+                                <a href="https://github.com/jaeheng/server_detail" target="_blank">https://github.com/jaeheng/server_detail</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Emlog应用商店</th>
+                            <td>
+                                <a href="https://www.emlog.net/plugin/detail/584" target="_blank">https://www.emlog.net/plugin/detail/584</a>
+                                (<a href="https://www.emlog.net/author/index/74" target="_blank">获取更多模版/插件</a>)
                             </td>
                         </tr>
                     </table>
