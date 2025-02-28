@@ -25,11 +25,8 @@ function plugin_setting_view()
     <div class="row">
         <div class="col-md-6">
             <div class="card">
+                <h6 class="card-header">服务器信息</h6>
                 <div class="card-body">
-                    <div class="card-head">
-                        <span>服务器信息</span>
-                    </div>
-                    <hr/>
                     <table class="table table-bordered">
                         <tr>
                             <th>服务器软件</th>
@@ -38,14 +35,6 @@ function plugin_setting_view()
                         <tr>
                             <th>操作系统</th>
                             <td><?= ServerDetail::getInstance()->getUname(); ?></td>
-                        </tr>
-                        <tr>
-                            <th>CPU</th>
-                            <td><?= ServerDetail::getInstance()->formatCpuInfo() ?></td>
-                        </tr>
-                        <tr>
-                            <th>内存大小</th>
-                            <td><?= ServerDetail::getInstance()->getServerMemorySize() ?></td>
                         </tr>
                         <tr>
                             <th>磁盘空间</th>
@@ -109,12 +98,17 @@ function plugin_setting_view()
                 </div>
             </div>
             <div class="card" style="margin-top: 20px;">
+                <h6 class="card-header">Emlog</h6>
                 <div class="card-body">
-                    <div class="card-head">
-                        <span>Emlog</span>
-                    </div>
-                    <hr/>
                     <table class="table table-bordered">
+                        <tr>
+                            <th>博客名称</th>
+                            <td><?= Option::get('blogname'); ?></td>
+                        </tr>
+                        <tr>
+                            <th>Emlog注册</th>
+                            <td><?= Register::isRegLocal() ? '<span class="text-success">正版已注册</span>' : '尚未完成正版注册 <a href="' . BLOG_URL . '/admin/auth.php" style="color:red;">去注册</a> <a href="https://www.emlog.net/?ic=SX1I7B5D" target="_blank">购买正版</a>' ?></td>
+                        </tr>
                         <tr>
                             <th>您的角色</th>
                             <td><?= ROLE; ?></td>
@@ -147,11 +141,13 @@ function plugin_setting_view()
                                 $plugins = Option::get('active_plugins');
                                 if (is_array($plugins) && !empty($plugins)) {
                                     foreach ($plugins as $item) {
-                                        $plugin = $pluginModel->getPluginData($item);
-                                        if ($plugin) {
-                                            echo "{$plugin['Name']} ({$plugin['Version']})<br/>";
-                                            if ($plugin['Plugin'] === 'server_detail') {
-                                                $server_detail_version = $plugin['Version'];
+                                        if (file_exists(EMLOG_ROOT . '/content/plugins/' . $item)) {
+                                            $plugin = $pluginModel->getPluginData($item);
+                                            if ($plugin) {
+                                                echo "<a href='{$plugin['Url']}' target='_blank'>{$plugin['Name']} ({$plugin['Version']})</a>、";
+                                                if ($plugin['Plugin'] === 'server_detail') {
+                                                    $server_detail_version = $plugin['Version'];
+                                                }
                                             }
                                         }
                                     }
@@ -188,17 +184,22 @@ function plugin_setting_view()
                             <th>总评论数</th>
                             <td><?= $res['comnum']; ?></td>
                         </tr>
+                        <tr>
+                            <th>文件上传最大限制</th>
+                            <td><?= changeFileSize(Option::get('att_maxsize') * 1024); ?></td>
+                        </tr>
+                        <tr>
+                            <th>允许上传的文件类型</th>
+                            <td><?= Option::get('att_type'); ?></td>
+                        </tr>
                     </table>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
             <div class="card">
+                <h6 class="card-header">PHP信息</h6>
                 <div class="card-body">
-                    <div class="card-head">
-                        <span>PHP信息</span>
-                    </div>
-                    <hr/>
                     <table class="table table-bordered">
                         <tr>
                             <th>php版本</th>
@@ -210,7 +211,9 @@ function plugin_setting_view()
                         </tr>
                         <tr>
                             <th title="upload_max_filesize">最大上传大小</th>
-                            <td><?= ini_get('upload_max_filesize'); ?></td>
+                            <td><?= ini_get('upload_max_filesize'); ?>
+                                (emlog注册用户上传最大限制<?= changeFileSize(Option::get('att_maxsize') * 1024); ?>)
+                            </td>
                         </tr>
                         <tr>
                             <th title="post_max_size">最大post大小</th>
@@ -233,11 +236,6 @@ function plugin_setting_view()
                             <td><?= ini_get('disable_functions') ?: '无'; ?></td>
                         </tr>
                         <tr>
-                            <th>session名称</th>
-                            <td><?= ini_get('session.name') ?: '默认'; ?></td>
-                        </tr>
-
-                        <tr>
                             <th>curl版本</th>
                             <td><?= curl_version()['version']; ?></td>
                         </tr>
@@ -245,19 +243,12 @@ function plugin_setting_view()
                             <th>zip扩展</th>
                             <td><?= class_exists('ZipArchive', false) ? '已安装' : '未安装'; ?></td>
                         </tr>
-                        <tr>
-                            <th>PHP进程ID</th>
-                            <td><?= getmypid(); ?></td>
-                        </tr>
                     </table>
                 </div>
             </div>
             <div class="card" style="margin-top: 20px;">
+                <h6 class="card-header">其它信息</h6>
                 <div class="card-body">
-                    <div class="card-head">
-                        <span>其它信息</span>
-                    </div>
-                    <hr/>
                     <table class="table table-bordered">
                         <tr>
                             <th>访问地址</th>
