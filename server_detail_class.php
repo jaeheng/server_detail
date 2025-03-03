@@ -84,7 +84,7 @@ class ServerDetail
             ),
         );
 
-        return file_get_contents('https://ifconfig.me/ip', false, stream_context_create($arrContextOptions));
+        return file_get_contents('https://blog.phpat.com/ifconfig.php', false, stream_context_create($arrContextOptions));
     }
 
     public function getBlogSize()
